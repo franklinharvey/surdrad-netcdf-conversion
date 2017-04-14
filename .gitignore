@@ -188,7 +188,7 @@ GitHub.sublime-settings
 
 # data files
 *.dat
-*.dat
+*.csv
 *.nc
 
 # End of https://www.gitignore.io/api/macos,osx,sublimetext,python,microsoftoffice
