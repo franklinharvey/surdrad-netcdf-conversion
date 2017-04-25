@@ -1,0 +1,1 @@
+YEAR DDD MM DD HH mm hh.mmm  ZNAGL    dw_psp qc uw_psp qc direct qc diffuse qc dw_pir qc dwCasTmp qc dwDomTmp qc uw_pir qc uwCastmp qc uwDomtmp qc uvb qc par qc netSolar qc netIr qc totalNet qc temp qc rh qc windSp qc winsDir qc Baro qc
