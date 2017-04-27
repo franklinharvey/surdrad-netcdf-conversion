@@ -11,7 +11,6 @@ import xarray as xr
 def main(filesToProcess):
     numOfFiles = len(filesToProcess)
     if numOfFiles>1:
-        outName = get_out_name(filesToProcess[0])
         for count,input in enumerate(filesToProcess):
             filename = get_filename(input)
             print "Processing %s -- %i out of %i" % (filename,count+1,numOfFiles)
@@ -19,13 +18,7 @@ def main(filesToProcess):
             df1 = filter_qc(df1)
             df1 = format_headers(df1)
             df1 = replace_nan(df1)
-            if count == 0:
-                df2 = df1
-                del df1
-            else:
-                df2 = pd.concat([df2, df1])
-                del df1
-        write_netcdf(df2, outName)
+            write_netcdf(df1, filename)
     else:
         input = filesToProcess[0]
         filename = get_filename(input)
