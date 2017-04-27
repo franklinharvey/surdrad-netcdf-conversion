@@ -1,7 +1,50 @@
+"""
+This module should accept .csv files and return .nc files.
+"""
+
+import sys
 from os.path import basename
 import os
 import pandas as pd
 import xarray as xr
+
+def main(filesToProcess):
+    numOfFiles = len(filesToProcess)
+    if numOfFiles>1:
+        outName = get_out_name(filesToProcess[0])
+        for count,input in enumerate(filesToProcess):
+            filename = get_filename(input)
+            print "Processing %s -- %i out of %i" % (filename,count+1,numOfFiles)
+            df1 = csv_to_dataframe(input)
+            df1 = filter_qc(df1)
+            df1 = format_headers(df1)
+            df1 = replace_nan(df1)
+            if count == 0:
+                df2 = df1
+                del df1
+            else:
+                df2 = pd.concat([df2, df1])
+                del df1
+        write_netcdf(df2, outName)
+    else:
+        input = filesToProcess[0]
+        filename = get_filename(input)
+        print "Processing %s" % (filename)
+        input = filesToProcess[0]
+        df1 = csv_to_dataframe(input)
+        df1 = filter_qc(df1)
+        df1 = format_headers(df1)
+        df1 = replace_nan(df1)
+        write_netcdf(df1, filename)
+
+def get_out_name(input):
+    return "%s_%s" % (get_testsite(input),get_year(input))
+
+def get_year(input):
+    return get_filename(input)[3:5]
+
+def get_julian_day(input):
+    return get_filename(input)[5:8]
 
 def get_filename(input):
     '''
@@ -82,13 +125,5 @@ def csv_to_dataframe(input):
         df1.loc[:,'TestSite'] = get_testsite(input)
     return df1
 
-def main():
-    input = "bon95001.csv"
-    df1 = csv_to_dataframe(input)
-    df1 = filter_qc(df1)
-    df1 = format_headers(df1)
-    df1 = replace_nan(df1)
-    write_netcdf(df1, get_filename(input))
-
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])
