@@ -1,13 +1,22 @@
 from os.path import basename
 import os
-import csv
 import pandas as pd
 import xarray as xr
 
 def get_filename(input):
+    '''
+    Returns the name of the file without the extension.
+    For example:
+
+    Input: "Test_01.csv"
+    Output: "Test_01"
+    '''
     return os.path.splitext(basename(input))[0]
 
 def get_testsite(input):
+    '''
+    Grabs the initials from the filename and returns the full name of the test site
+    '''
     base = get_filename(input)
     testsite = base[0:3]
     if testsite == "bon":
@@ -29,25 +38,41 @@ def get_testsite(input):
         return "no_test_site"
 
 def replace_nan(df1):
+    '''
+    The value "-9999.9" is specified to be a placeholder for non-existent values. This replaces those values with "NaN"
+    '''
     df1.replace(to_replace="-9999.9",value="NaN", inplace=True)
     return df1
 
 def format_headers(df1):
+    '''
+    Deletes white space and extra quotes from headers. Often necessary for the NetCDF writer
+    '''
     df1.columns = [s.strip(' ') for s in list(df1)]
     df1.columns = [s.strip('\"') for s in list(df1)]
     return df1
 
 def filter_qc(df1):
+    '''
+    Drops all the qc columns
+    '''
     df1.drop(list(df1.filter(like="qc")), axis=1, inplace=True)
     df1.drop(df1.columns[[0,1,2]], axis=1, inplace=True)
     return df1
 
-def write_netcdf(df1,input):
+def write_netcdf(df1, name):
+    '''
+    Writes the dataframe into a NetCDF4 file
+    '''
     xds = xr.Dataset.from_dataframe(df1)
-    xds.to_netcdf("Data/nc/" + get_filename(input) + ".nc")
+    xds.to_netcdf("Data/nc/" + name + ".nc")
 
-def main():
-    input = "bon95001.csv"
+def csv_to_dataframe(input):
+    '''
+    Loads a csv into a Pandas dataframe.
+    Uses the Year, Julian Day, Hour, and Minute to create an index column of "Date".
+    Adds the test site as a column
+    '''
     with open(input, 'r') as input_file:
         df1=pd.read_csv(input_file,
             sep=",",
@@ -55,11 +80,15 @@ def main():
             date_parser = lambda x: pd.to_datetime(x, format="%Y %j %H %M"),
             index_col = ['Date'])
         df1.loc[:,'TestSite'] = get_testsite(input)
+    return df1
 
+def main():
+    input = "bon95001.csv"
+    df1 = csv_to_dataframe(input)
     df1 = filter_qc(df1)
     df1 = format_headers(df1)
     df1 = replace_nan(df1)
-    write_netcdf(df1,input)
+    write_netcdf(df1, get_filename(input))
 
 if __name__ == '__main__':
     main()
