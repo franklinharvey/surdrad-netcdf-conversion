@@ -1,7 +1,6 @@
 import sys
 from os.path import basename
 import os
-import csv
 
 def main(filesToProcess):
 	if len(filesToProcess)>1: # if list of 2 or more files
@@ -11,7 +10,7 @@ def main(filesToProcess):
 		dat_to_csv(filesToProcess[0])
 
 def dat_to_csv(input):
-    headers = get_headers(input)
+    headers = get_headers()
     base = os.path.splitext(basename(input))[0]
 
     print "Processing %s" % base
@@ -30,14 +29,14 @@ def dat_to_csv(input):
 						outLine = ",".join(line.split())
 						output_file.write(outLine + '\n')
 
-def get_headers(input, get_csv=True):
+def get_headers(input="headers.dat", get_csv=True):
     headers = []
-    with open("headers.dat", 'r') as header_file:
+    with open(input, 'r') as header_file:
         for line in header_file:
             headers = line.split()
     if get_csv:
         return ('"%s"') % '", "'.join(headers)
-    else:
+    else: # leave the option of returning an array of headers instead
         return headers
 
 if __name__ == '__main__':
