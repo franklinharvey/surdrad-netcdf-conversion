@@ -16,7 +16,6 @@ def main(filesToProcess):
             print "Processing %s -- %i out of %i" % (filename,count+1,numOfFiles)
             df1 = csv_to_dataframe(input)
             df1 = filter_qc(df1)
-            df1 = format_headers(df1)
             df1 = replace_nan(df1)
             write_netcdf(df1, filename)
     else:
@@ -26,30 +25,8 @@ def main(filesToProcess):
         input = filesToProcess[0]
         df1 = csv_to_dataframe(input)
         df1 = filter_qc(df1)
-        df1 = format_headers(df1)
         df1 = replace_nan(df1)
         write_netcdf(df1, filename)
-
-def get_out_name(input):
-    '''
-    Returns testsite_year
-    For example, Bondville_IL_1995
-    '''
-    return "%s_%s" % (get_testsite(input),get_year(input))
-
-def get_year(input):
-    '''
-    Returns the year of the file
-    For example, bon95001.csv returns 95
-    '''
-    return get_filename(input)[3:5]
-
-def get_julian_day(input):
-    '''
-    Returns the julian day
-    For example, bon95001.csv returns 001
-    '''
-    return get_filename(input)[5:8]
 
 def get_filename(input):
     '''
@@ -90,14 +67,6 @@ def replace_nan(df1):
     The value "-9999.9" is specified to be a placeholder for non-existent values. This replaces those values with "NaN"
     '''
     df1.replace(to_replace="-9999.9",value="NaN", inplace=True)
-    return df1
-
-def format_headers(df1):
-    '''
-    Deletes white space and extra quotes from headers. Often necessary for the NetCDF writer
-    '''
-    df1.columns = [s.strip(' ') for s in list(df1)]
-    df1.columns = [s.strip('\"') for s in list(df1)]
     return df1
 
 def filter_qc(df1):

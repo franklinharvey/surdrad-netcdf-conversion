@@ -35,7 +35,7 @@ def get_headers(input="headers.dat", get_csv=True):
         for line in header_file:
             headers = line.split()
     if get_csv:
-        return ('"%s"') % '", "'.join(headers)
+        return ('%s') % ','.join(headers)
     else: # leave the option of returning an array of headers instead
         return headers
 
