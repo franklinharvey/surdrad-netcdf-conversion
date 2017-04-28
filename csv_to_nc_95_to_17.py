@@ -9,7 +9,7 @@ import time
 def main():
     years = ["95","96","97","98","99","00","01","02","03","04","05","06","07","08","09","10","11","12","13","14","15","16","17"]
     # the years to be converted
-    sites = ["tbl","dra","fpk","gwn","psu","sxf"]
+    sites = ["bon","tbl","dra","fpk","gwn","psu","sxf"]
     # the sites to be converted, as found in file names
     for site in sites:
         if site == "dra" or site == "psu":

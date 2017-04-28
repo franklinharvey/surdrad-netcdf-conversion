@@ -15,7 +15,7 @@ def main(filesToProcess):
             filename = get_filename(input)
             print "Processing %s -- %i out of %i" % (filename,count+1,numOfFiles)
             df1 = csv_to_dataframe(input)
-            df1 = filter_qc(df1)
+            # df1 = filter_qc(df1)
             df1 = replace_nan(df1)
             write_netcdf(df1, filename)
     else:
@@ -24,7 +24,7 @@ def main(filesToProcess):
         print "Processing %s" % (filename)
         input = filesToProcess[0]
         df1 = csv_to_dataframe(input)
-        df1 = filter_qc(df1)
+        # df1 = filter_qc(df1)
         df1 = replace_nan(df1)
         write_netcdf(df1, filename)
 
