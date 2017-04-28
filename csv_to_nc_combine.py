@@ -12,8 +12,9 @@ def main(filesToProcess):
     numOfFiles = len(filesToProcess)
     if numOfFiles>1:
         if numOfFiles>366: # this is more than one year
+            outName = get_out_name(filesToProcess[0]) + "_to_" + get_year(filesToProcess[-1])
+        else:
             outName = get_out_name(filesToProcess[0])
-        outName = get_out_name(filesToProcess[0]) + "_to_" + get_year(filesToProcess[-1])
         for count,input in enumerate(filesToProcess):
             filename = get_filename(input)
             print "Processing %s -- %i out of %i" % (filename,count+1,numOfFiles)
