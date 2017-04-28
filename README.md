@@ -3,6 +3,40 @@
 
 All of the examples will be data from `Bondville_IL/`, and from the year 2016. Such files will be names `bon16###` where `###` denotes the julian day of the year. 
 
+## Structuring Your Directory
+
+As of April 28, 2017, these files assume this directory is laid out in this manner:
+
+    Project
+     |
+     +-- Python Files
+     |
+     +-- Shell Files
+     |    
+     +-- Data\
+     |  |  
+     |  +-- Bondville_IL\
+     |  |   |
+     |  |   +--1995\
+     |  |   |  |
+     |  |   |  +--bon95001.dat
+     |  |   |  |
+     |  |   |  +--bon95002.dat
+     |  |   |  |
+     |  |   |  +--etc.
+     |  |   |
+     |  |   +--1996\
+     |  |   |
+     |  |   +--etc.
+     |  |
+     |  +-- Boulder_CO\
+     |  |
+     |  +-- csv\
+     |  |
+     |  +-- nc\
+
+This is necessary because many of the converison scripts will try and write to `Data\csv\` or `Data\nc`.
+
 ## Headers
 
 Radiation's Surfrad files have numerous headers:
