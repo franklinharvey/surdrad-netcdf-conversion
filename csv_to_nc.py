@@ -8,7 +8,7 @@ import os
 import pandas as pd
 import xarray as xr
 
-def main(filesToProcess):
+def main(filesToProcess,qcChoice=True):
     numOfFiles = len(filesToProcess)
     if numOfFiles>1:
         outName = get_out_name(filesToProcess[0])
@@ -16,15 +16,20 @@ def main(filesToProcess):
             filename = get_filename(input)
             print "Processing %s -- %i out of %i" % (filename,count+1,numOfFiles)
             df1 = csv_to_dataframe(input)
-            df1 = filter_qc(df1)
+
+            if qcChoice:
+                df1 = filter_qc(df1)
+            df1 = filter_date_cols(df1)
             df1 = format_headers(df1)
             df1 = replace_nan(df1)
+
             if count == 0:
                 df2 = df1
                 del df1
             else:
                 df2 = pd.concat([df2, df1])
                 del df1
+
         write_netcdf(df2, outName)
     else:
         input = filesToProcess[0]
@@ -32,10 +37,24 @@ def main(filesToProcess):
         print "Processing %s" % (filename)
         input = filesToProcess[0]
         df1 = csv_to_dataframe(input)
-        df1 = filter_qc(df1)
+
+        if qcChoice:
+            df1 = filter_qc(df1)
+        df1 = filter_date_cols(df1)
         df1 = format_headers(df1)
         df1 = replace_nan(df1)
+
         write_netcdf(df1, filename)
+
+def get_bool(prompt):
+    '''
+    Gets user input and returns corresponding true or false boolean
+    '''
+    while True:
+        try:
+           return {"true":True,"false":False}[input(prompt).lower()]
+        except KeyError:
+           print "Invalid input please enter True or False!"
 
 def get_out_name(input):
     '''
@@ -112,6 +131,12 @@ def filter_qc(df1):
     Drops all the qc columns
     '''
     df1.drop(list(df1.filter(like="qc")), axis=1, inplace=True)
+    return df1
+
+def filter_date_cols(df1):
+    '''
+    Drops unused date columns
+    '''
     df1.drop(df1.columns[[0,1,2]], axis=1, inplace=True)
     return df1
 
