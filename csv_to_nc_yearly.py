@@ -3,24 +3,24 @@ This module should accept .csv files and return .nc files.
 """
 
 import sys
+from os.path import basename
+import os
 import nc_convert as ncc
 
 def main(filesToProcess):
     numOfFiles = len(filesToProcess)
     if numOfFiles>1:
-        for count,input in enumerate(filesToProcess):
-            outName = get_out_name(input)
-            print "Processing %s: %i out of %i" % (outName,count+1,numOfFiles)
-            ncc.normal_process(input,'daily',outName)
+        outName = get_out_name(filesToProcess[0])
+        ncc.normal_process(filesToProcess,'yearly',outName)
     else:
-        ncc.normal_process(filesToProcess[0],'daily',outName)
+        print "You did not pass multiple files."
 
 def get_out_name(input):
     '''
-    Returns testsite_day_year
-    For example, Bondville_IL_273_95
+    Returns testsite_year
+    For example, Bondville_IL_95
     '''
-    return "%s_%s_%s" % (get_testsite(input),get_julian_day(input),get_year(input))
+    return "%s_%s" % (get_testsite(input),get_year(input))
 
 def get_year(input):
     '''
@@ -28,13 +28,6 @@ def get_year(input):
     For example, bon95001.csv returns 95
     '''
     return get_filename(input)[3:5]
-
-def get_julian_day(input):
-    '''
-    Returns the julian day
-    For example, bon95001.csv returns 001
-    '''
-    return get_filename(input)[5:8]
 
 def get_filename(input):
     '''

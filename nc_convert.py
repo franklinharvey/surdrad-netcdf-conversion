@@ -1,25 +1,35 @@
-"""
-This module should accept .csv files and return .nc files.
-"""
-
-import sys
 from os.path import basename
 import os
 import pandas as pd
 import xarray as xr
 
-def main(filesToProcess):
-    numOfFiles = len(filesToProcess)
-    if numOfFiles>1:
-        if numOfFiles>366: # this is more than one year
-            outName = get_out_name(filesToProcess[0]) + "_to_" + get_year(filesToProcess[-1])
-        else:
-            outName = get_out_name(filesToProcess[0])
-        for count,input in enumerate(filesToProcess):
-            filename = get_filename(input)
-            print "Processing %s -- %i out of %i" % (filename,count+1,numOfFiles)
-            df1 = csv_to_dataframe(input)
-            # df1 = filter_qc(df1)
+def normal_process(input,delta,outName,filterQC = False):
+    '''
+    Does all the filtering and converting done in a standard process.
+
+    Essentially a 'main' function
+    '''
+    if not delta:
+        print "No Time Delta specified. Please indicate 'daily', 'yearly', or 'testsite'"
+        return
+
+    if delta == 'daily':
+        df1 = csv_to_dataframe(input)
+        if filterQC:
+            df1 = filter_qc(df1)
+        df1 = filter_dates(df1)
+        df1 = set_headers(df1)
+        df1 = replace_nan(df1)
+        write_netcdf(df1, outName)
+
+    elif delta == 'yearly' or delta == 'testsite':
+        for count,day in enumerate(input):
+            print get_filename(day)
+            df1 = csv_to_dataframe(day)
+            if filterQC:
+                df1 = filter_qc(df1)
+            df1 = filter_dates(df1)
+            df1 = set_headers(df1)
             df1 = replace_nan(df1)
             if count == 0:
                 df2 = df1
@@ -28,39 +38,10 @@ def main(filesToProcess):
                 df2 = pd.concat([df2, df1])
                 del df1
         write_netcdf(df2, outName)
+
     else:
-        print "You did not pass multiple files."
-
-def get_out_name(input):
-    '''
-    Returns testsite_year
-    For example, Bondville_IL_95
-    '''
-    return "%s_%s" % (get_testsite(input),get_year(input))
-
-def get_year(input):
-    '''
-    Returns the year of the file
-    For example, bon95001.csv returns 95
-    '''
-    return get_filename(input)[3:5]
-
-def get_julian_day(input):
-    '''
-    Returns the julian day
-    For example, bon95001.csv returns 001
-    '''
-    return get_filename(input)[5:8]
-
-def get_filename(input):
-    '''
-    Returns the name of the file without the extension.
-    For example:
-
-    Input: "Test_01.csv"
-    Output: "Test_01"
-    '''
-    return os.path.splitext(basename(input))[0]
+        print "Time Delta not recognized. Please indicate 'daily', 'yearly', or 'testsite'"
+        return
 
 def get_testsite(input):
     '''
@@ -86,6 +67,16 @@ def get_testsite(input):
         print "no matching testing site for input file"
         return "no_test_site"
 
+def get_filename(input):
+    '''
+    Returns the name of the file without the extension.
+    For example:
+
+    Input: "Test_01.csv"
+    Output: "Test_01"
+    '''
+    return os.path.splitext(basename(input))[0]
+
 def replace_nan(df1):
     '''
     The value "-9999.9" is specified to be a placeholder for non-existent values. This replaces those values with "NaN"
@@ -98,6 +89,12 @@ def filter_qc(df1):
     Drops all the qc columns
     '''
     df1.drop(list(df1.filter(like="qc")), axis=1, inplace=True)
+    return df1
+
+def filter_dates(df1):
+    '''
+    Drops extra date columns
+    '''
     df1.drop(df1.columns[[0,1,2]], axis=1, inplace=True)
     return df1
 
@@ -123,5 +120,13 @@ def csv_to_dataframe(input):
         df1.loc[:,'TestSite'] = get_testsite(input)
     return df1
 
-if __name__ == '__main__':
-    main(sys.argv[1:])
+def set_headers(df1,input="nc_headers.txt"):
+    '''
+    Adds the preceeding column name to the each qc column
+    '''
+    headers = []
+    with open(input, 'r') as header_file:
+        for line in header_file:
+            headers = line.split()
+    df1.columns = headers
+    return df1

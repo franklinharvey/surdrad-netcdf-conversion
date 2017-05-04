@@ -9,7 +9,7 @@ import sys
 import os
 
 def main(selection):
-    call = "python csv_to_nc_combine.py Data/csv/%s*.csv" % (selection)
+    call = "python csv_to_nc_yearly.py Data/csv/%s*.csv" % (selection)
     os.system(call)
 
 if __name__ == '__main__':

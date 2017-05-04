@@ -1,0 +1,1 @@
+ZNAGL dw_psp dw_psp_qc uw_psp uw_psp_qc direct direct_qc diffuse diffuse_qc dw_pir dw_pir_qc dwCasTmp dwCasTmp_qc dwDomTmp dwDomTmp_qc uw_pir uw_pir_qc uwCastmp uwCastmp_qc uwDomtmp uwDomtmp_qc uvb uvb_qc par par_qc netSolar netSolar_qc netIr netIr_qc totalNet totalNet_qc temp temp_qc rh rh_qc windSp windSp_qc winsDir winsDir_qc Baro Baro_qc TestSite
