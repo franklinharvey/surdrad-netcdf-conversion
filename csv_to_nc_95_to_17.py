@@ -15,17 +15,17 @@ def main():
         if site == "dra" or site == "psu":
             # these two sites only date back to 1998
             for year in years[3:]:
-                call = "python csv_to_nc_combine.py Data/csv/%s%s*.csv" % (site,year)
+                call = "python csv_to_nc_yearly.py Data/csv/%s%s*.csv" % (site,year)
                 os.system(call)
         elif site == "sfk":
             # this site only dates back to 2003
             for year in years[8:]:
-                call = "python csv_to_nc_combine.py Data/csv/%s%s*.csv" % (site,year)
+                call = "python csv_to_nc_yearly.py Data/csv/%s%s*.csv" % (site,year)
                 os.system(call)
         else:
             # all other sites date back to 1993
             for year in years:
-                call = "python csv_to_nc_combine.py Data/csv/%s%s*.csv" % (site,year)
+                call = "python csv_to_nc_yearly.py Data/csv/%s%s*.csv" % (site,year)
                 os.system(call)
 
 if __name__ == '__main__':
