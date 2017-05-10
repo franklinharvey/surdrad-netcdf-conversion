@@ -33,7 +33,7 @@ def dat_to_csv(input):
 						outLine = ",".join(line.split())
 						output_file.write(outLine + '\n')
 
-def get_headers(input="headers.dat", get_csv=True):
+def get_headers(input="headers.txt", get_csv=True):
     headers = []
     with open(input, 'r') as header_file:
         for line in header_file:

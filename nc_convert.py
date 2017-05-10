@@ -1,75 +1,108 @@
 from os.path import basename
 import os
 import datetime
+import calendar
 import pandas as pd
 import xarray as xr
 
-def normal_process(input,delta,outName,filterQC = True):
+# DELETE
+# def normal_process(input,delta,outName,filterQC = True):
+#     '''
+#     Does all the filtering and converting done in a standard process.
+#
+#     Essentially a 'main' function
+#     '''
+#     if not delta:
+#         print "No Time Delta specified. Please indicate 'daily', 'monthly', 'yearly', or 'testsite'"
+#         return
+#
+#     if delta == 'daily':
+#         df1 = csv_to_dataframe(input)
+#         if filterQC:
+#             df1 = filter_qc(df1)
+#         df1 = filter_dates(df1)
+#         df1 = set_headers(df1,filterQC)
+#         df1 = replace_nan(df1)
+#         write_netcdf(df1, outName, delta)
+#
+#     elif delta == 'yearly' or delta == 'testsite':
+#         for count,day in enumerate(input):
+#             print get_filename(day)
+#             df1 = csv_to_dataframe(day)
+#             if filterQC:
+#                 df1 = filter_qc(df1)
+#             df1 = filter_dates(df1)
+#             df1 = set_headers(df1,filterQC)
+#             df1 = replace_nan(df1)
+#             if count == 0:
+#                 df2 = df1
+#                 del df1
+#             else:
+#                 df2 = pd.concat([df2, df1])
+#                 del df1
+#         write_netcdf(df2, outName, delta)
+#
+#     elif delta == 'monthly':
+#         masterMonth = "January"
+#         for count,file in enumerate(input):
+#             month = get_month(file)
+#             day = get_day(file)
+#             year = get_year(file)
+#             df1 = csv_to_dataframe(file)
+#             if filterQC:
+#                 df1 = filter_qc(df1)
+#             df1 = filter_dates(df1)
+#             df1 = set_headers(df1,filterQC)
+#             df1 = replace_nan(df1)
+#
+#             outName = "%s_%s_%s" % (get_testsite(file),masterMonth,year)
+#
+#             if month == masterMonth: # same month, append
+#                 if day == '01' or file == input[0]:
+#                     df2 = df1
+#                     del df1
+#                 else:
+#                     df2 = pd.concat([df2, df1])
+#                     del df1
+#                 print day
+#                 print calendar.monthrange(int(year), get_month_as_num(file))[1]
+#
+#                 if int(day) == calendar.monthrange(int(year), get_month_as_num(file))[1]:
+#                     print outName
+#                     write_netcdf(df2,outName,delta)
+#                     masterMonth = get_month(input[count+1]) # switch month
+#                     del df2
+#
+#
+#     else:
+#         print "Time Delta not recognized. Please indicate 'daily', 'monthly', 'yearly', or 'testsite'"
+#         return
+
+def normal_process(input, outName):
     '''
-    Does all the filtering and converting done in a standard process.
-
-    Essentially a 'main' function
+    Converts all all files in 'input' into a single NetCDF file with name 'outName'
     '''
-    if not delta:
-        print "No Time Delta specified. Please indicate 'daily', 'monthly', 'yearly', or 'testsite'"
-        return
-
-    if delta == 'daily':
-        df1 = csv_to_dataframe(input)
-        if filterQC:
-            df1 = filter_qc(df1)
-        df1 = filter_dates(df1)
-        df1 = set_headers(df1,filterQC)
-        df1 = replace_nan(df1)
-        write_netcdf(df1, outName, delta)
-
-    elif delta == 'yearly' or delta == 'testsite':
+    if not isinstance(input, basestring):
         for count,day in enumerate(input):
-            print get_filename(day)
+            print "%s into %s -- %i/%i" % (get_filename(day), outName, count+1, len(input))
             df1 = csv_to_dataframe(day)
-            if filterQC:
-                df1 = filter_qc(df1)
+            df1 = filter_qc(df1)
             df1 = filter_dates(df1)
-            df1 = set_headers(df1,filterQC)
+            df1 = set_headers(df1)
             df1 = replace_nan(df1)
             if count == 0:
                 df2 = df1
-                del df1
             else:
                 df2 = pd.concat([df2, df1])
-                del df1
-        write_netcdf(df2, outName, delta)
-
-    elif delta == 'monthly':
-        masterMonth = "January"
-        for count,file in enumerate(input):
-            month = get_month(file)
-            day = get_day(file)
-            year = get_year(file)
-            outName = "%s_%s_%s" % (get_testsite(file),masterMonth,year)
-            df1 = csv_to_dataframe(file)
-            if filterQC:
-                df1 = filter_qc(df1)
-            df1 = filter_dates(df1)
-            df1 = set_headers(df1,filterQC)
-            df1 = replace_nan(df1)
-
-            if month == masterMonth: # same month, append
-                if day == '01':
-                    df2 = df1
-                    del df1
-                else:
-                    df2 = pd.concat([df2, df1])
-                    del df1
-            else:
-                print outName
-                write_netcdf(df2,outName,delta)
-                masterMonth = month # switch month
-                df2 = df1
-
+            del df1
+            write_netcdf(df2, outName)
     else:
-        print "Time Delta not recognized. Please indicate 'daily', 'monthly', 'yearly', or 'testsite'"
-        return
+        df1 = csv_to_dataframe(input)
+        df1 = filter_qc(df1)
+        df1 = filter_dates(df1)
+        df1 = set_headers(df1)
+        df1 = replace_nan(df1)
+        write_netcdf(df1, outName)
 
 def get_testsite(input):
     '''
@@ -108,7 +141,7 @@ def get_filename(input):
 def get_date_object(input):
     '''
     Returns the date object of the file
-    For example, bon95001.csv returns 'datetime.datetime(1995, 12, 31, 0, 0)'
+    For example, bon95365.csv returns 'datetime.datetime(1995, 12, 31, 0, 0)'
     '''
     date = get_filename(input)[3:]
     return datetime.datetime.strptime(date, '%y%j')
@@ -129,42 +162,51 @@ def get_month(input):
     date = get_date_object(input)
     return date.strftime('%B')
 
-def iterate_month(month):
-    if month == "January":
-        return "February"
+def get_month_as_num(input):
+    '''
+    Returns the month of the file
+    For example, bon95001.csv returns 'January'
+    '''
+    date = get_date_object(input)
+    return int(date.strftime('%m'))
 
-    elif month == "February":
-        return "March"
-
-    elif month == "March":
-        return "April"
-
-    elif month == "April":
-        return "May"
-
-    elif month == "May":
-        return "June"
-
-    elif month == "June":
-        return "July"
-
-    elif month == "July":
-        return "August"
-
-    elif month == "August":
-        return "September"
-
-    elif month == "September":
-        return "October"
-
-    elif month == "October":
-        return "November"
-
-    elif month == "November":
-        return "December"
-
-    elif month == "December":
-        return "January"
+# DELETE
+# def iterate_month(month):
+#     if month == "January":
+#         return "February"
+#
+#     elif month == "February":
+#         return "March"
+#
+#     elif month == "March":
+#         return "April"
+#
+#     elif month == "April":
+#         return "May"
+#
+#     elif month == "May":
+#         return "June"
+#
+#     elif month == "June":
+#         return "July"
+#
+#     elif month == "July":
+#         return "August"
+#
+#     elif month == "August":
+#         return "September"
+#
+#     elif month == "September":
+#         return "October"
+#
+#     elif month == "October":
+#         return "November"
+#
+#     elif month == "November":
+#         return "December"
+#
+#     elif month == "December":
+#         return "January"
 
 def get_day(input):
     '''
@@ -173,6 +215,30 @@ def get_day(input):
     '''
     date = get_date_object(input)
     return date.strftime('%d')
+
+def write_netcdf(df1, name):
+    '''
+    Writes the dataframe into a NetCDF4 file
+
+    'name' should be the full path: "Data/nc/daily/bon/1995/Bondville_IL_1995_01_01.nc"
+    '''
+    xds = xr.Dataset.from_dataframe(df1)
+    xds.to_netcdf(name)
+
+def csv_to_dataframe(input):
+    '''
+    Loads a csv into a Pandas dataframe.
+    Uses the Year, Julian Day, Hour, and Minute to create an index column of "Date".
+    Adds the test site as a column
+    '''
+    with open(input, 'r') as input_file:
+        df1=pd.read_csv(input_file,
+            sep=",",
+            parse_dates = {'Date': [0,1,4,5]},
+            date_parser = lambda x: pd.to_datetime(x, format="%Y %j %H %M"),
+            index_col = ['Date'])
+        df1.loc[:,'TestSite'] = get_testsite(input)
+    return df1
 
 def replace_nan(df1):
     '''
@@ -195,37 +261,11 @@ def filter_dates(df1):
     df1.drop(df1.columns[[0,1,2]], axis=1, inplace=True)
     return df1
 
-def write_netcdf(df1, name, delta):
+def set_headers(df1):
     '''
-    Writes the dataframe into a NetCDF4 file
+    Renames all the columns based off of "nc_headers.txt"
     '''
-    xds = xr.Dataset.from_dataframe(df1)
-    xds.to_netcdf("Data/nc/%s/%s.nc" % (delta, name))
-
-def csv_to_dataframe(input):
-    '''
-    Loads a csv into a Pandas dataframe.
-    Uses the Year, Julian Day, Hour, and Minute to create an index column of "Date".
-    Adds the test site as a column
-    '''
-    with open(input, 'r') as input_file:
-        df1=pd.read_csv(input_file,
-            sep=",",
-            parse_dates = {'Date': [0,1,4,5]},
-            date_parser = lambda x: pd.to_datetime(x, format="%Y %j %H %M"),
-            index_col = ['Date'])
-        df1.loc[:,'TestSite'] = get_testsite(input)
-    return df1
-
-def set_headers(df1,qc):
-    '''
-    Adds the preceeding column name to the each qc column
-    '''
-    if qc:
-        input="nc_headers_no_qc.txt"
-    else:
-        input="nc_headers.txt"
-    headers = []
+    input="nc_headers.txt"
     with open(input, 'r') as header_file:
         for line in header_file:
             headers = line.split()
