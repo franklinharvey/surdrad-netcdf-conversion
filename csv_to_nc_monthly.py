@@ -10,51 +10,19 @@ import nc_convert as ncc
 def main(filesToProcess):
     numOfFiles = len(filesToProcess)
     if numOfFiles>1:
-        ncc.normal_process(filesToProcess,'monthly',"none")
+        outName = set_outName(filesToProcess[0])
+        ncc.normal_process(filesToProcess, outName)
     else:
-        ncc.normal_process(filesToProcess,'monthly',"none")
-        print "You did not pass multiple files."
+        print "Not enough files!"
 
-def get_year(input):
+def set_outName(input):
     '''
-    Returns the year of the file
-    For example, bon95001.csv returns 95
+    Sets the output name for monthly files
     '''
-    return get_filename(input)[3:5]
-
-def get_filename(input):
-    '''
-    Returns the name of the file without the extension.
-    For example:
-
-    Input: "Test_01.csv"
-    Output: "Test_01"
-    '''
-    return os.path.splitext(basename(input))[0]
-
-def get_testsite(input):
-    '''
-    Grabs the initials from the filename and returns the full name of the test site
-    '''
-    base = get_filename(input)
-    testsite = base[0:3]
-    if testsite == "bon":
-        return "Bondville_IL"
-    elif testsite == "tbl":
-        return "Boulder_CO"
-    elif testsite == "dra":
-        return "Desert_Rock_NV"
-    elif testsite == "fpk":
-        return "Fort_Peck_MT"
-    elif testsite == "gwn":
-        return "Goodwin_Creek_MS"
-    elif testsite == "psu":
-        return "Penn_State_PA"
-    elif testsite == "sxf":
-        return "Sioux_Falls_SD"
-    else:
-        print "no matching testing site for input file"
-        return "no_test_site"
+    site = ncc.get_testsite(input)
+    year = ncc.get_year(input)
+    month = ncc.get_month(input)
+    return "Data/nc/monthly/%s/%s/%s_%s_%s.nc" % (site, year, site, year, month)
 
 if __name__ == '__main__':
     main(sys.argv[1:])

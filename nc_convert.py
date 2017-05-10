@@ -97,6 +97,7 @@ def normal_process(input, outName):
             del df1
             write_netcdf(df2, outName)
     else:
+        print "Processing daily - %s" % (get_filename(input))
         df1 = csv_to_dataframe(input)
         df1 = filter_qc(df1)
         df1 = filter_dates(df1)
