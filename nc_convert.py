@@ -1,82 +1,8 @@
 from os.path import basename
 import os
 import datetime
-import calendar
 import pandas as pd
 import xarray as xr
-
-# DELETE
-# def normal_process(input,delta,outName,filterQC = True):
-#     '''
-#     Does all the filtering and converting done in a standard process.
-#
-#     Essentially a 'main' function
-#     '''
-#     if not delta:
-#         print "No Time Delta specified. Please indicate 'daily', 'monthly', 'yearly', or 'testsite'"
-#         return
-#
-#     if delta == 'daily':
-#         df1 = csv_to_dataframe(input)
-#         if filterQC:
-#             df1 = filter_qc(df1)
-#         df1 = filter_dates(df1)
-#         df1 = set_headers(df1,filterQC)
-#         df1 = replace_nan(df1)
-#         write_netcdf(df1, outName, delta)
-#
-#     elif delta == 'yearly' or delta == 'testsite':
-#         for count,day in enumerate(input):
-#             print get_filename(day)
-#             df1 = csv_to_dataframe(day)
-#             if filterQC:
-#                 df1 = filter_qc(df1)
-#             df1 = filter_dates(df1)
-#             df1 = set_headers(df1,filterQC)
-#             df1 = replace_nan(df1)
-#             if count == 0:
-#                 df2 = df1
-#                 del df1
-#             else:
-#                 df2 = pd.concat([df2, df1])
-#                 del df1
-#         write_netcdf(df2, outName, delta)
-#
-#     elif delta == 'monthly':
-#         masterMonth = "January"
-#         for count,file in enumerate(input):
-#             month = get_month(file)
-#             day = get_day(file)
-#             year = get_year(file)
-#             df1 = csv_to_dataframe(file)
-#             if filterQC:
-#                 df1 = filter_qc(df1)
-#             df1 = filter_dates(df1)
-#             df1 = set_headers(df1,filterQC)
-#             df1 = replace_nan(df1)
-#
-#             outName = "%s_%s_%s" % (get_testsite(file),masterMonth,year)
-#
-#             if month == masterMonth: # same month, append
-#                 if day == '01' or file == input[0]:
-#                     df2 = df1
-#                     del df1
-#                 else:
-#                     df2 = pd.concat([df2, df1])
-#                     del df1
-#                 print day
-#                 print calendar.monthrange(int(year), get_month_as_num(file))[1]
-#
-#                 if int(day) == calendar.monthrange(int(year), get_month_as_num(file))[1]:
-#                     print outName
-#                     write_netcdf(df2,outName,delta)
-#                     masterMonth = get_month(input[count+1]) # switch month
-#                     del df2
-#
-#
-#     else:
-#         print "Time Delta not recognized. Please indicate 'daily', 'monthly', 'yearly', or 'testsite'"
-#         return
 
 def normal_process(input, outName):
     '''
