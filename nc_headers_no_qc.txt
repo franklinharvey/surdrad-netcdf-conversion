@@ -1,1 +1,1 @@
-ZNAGL dw_psp uw_psp direct diffuse dw_pir dwCasTmp dwDomTmp uw_pir uwCastmp uwDomtmp uvb par netSolar netIr totalNet temp rh windSp winsDir Baro TestSite
+ZNAGL dw_psp uw_psp direct diffuse dw_pir dwCasTmp dwDomTmp uw_pir uwCastmp uwDomtmp uvb par netSolar netIr totalNet temp rh windSp windDir Baro TestSite
