@@ -23,7 +23,7 @@ def normal_process(input, outName):
             del df1
             write_netcdf(df2, outName)
     else:
-        print "Processing daily - %s" % (get_filename(input))
+        print "%s into %s" % (get_filename(input), outname)
         df1 = csv_to_dataframe(input)
         df1 = filter_qc(df1)
         df1 = filter_dates(df1)
@@ -161,10 +161,9 @@ def csv_to_dataframe(input):
     with open(input, 'r') as input_file:
         df1=pd.read_csv(input_file,
             sep=",",
-            parse_dates = {'Date': [0,1,4,5]},
+            parse_dates = {'date': [0,1,4,5]},
             date_parser = lambda x: pd.to_datetime(x, format="%Y %j %H %M"),
-            index_col = ['Date'])
-        df1.loc[:,'TestSite'] = get_testsite(input)
+            index_col = ['date'])
     return df1
 
 def replace_nan(df1):
