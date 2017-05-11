@@ -14,6 +14,8 @@ def main():
                 for f in files if f.endswith('.csv')]
             if a:
                 ncy.main(a)
+            else:
+                print "Nothing for %s-%s" % (site,year)
 
 if __name__ == '__main__':
     main()

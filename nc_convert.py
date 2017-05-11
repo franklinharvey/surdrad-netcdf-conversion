@@ -3,6 +3,7 @@ import os
 import datetime
 import pandas as pd
 import xarray as xr
+import add_global as ag
 
 def normal_process(input, outName):
     '''
@@ -10,7 +11,7 @@ def normal_process(input, outName):
     '''
     if not isinstance(input, basestring):
         for count,day in enumerate(input):
-            print "%s into %s -- %i/%i" % (get_filename(day), outName, count+1, len(input))
+            # print "%s into %s -- %i/%i" % (get_filename(day), outName, count+1, len(input))
             df1 = csv_to_dataframe(day)
             df1 = filter_qc(df1)
             df1 = filter_dates(df1)
@@ -21,15 +22,17 @@ def normal_process(input, outName):
             else:
                 df2 = pd.concat([df2, df1])
             del df1
-            write_netcdf(df2, outName)
+        write_netcdf(df2, outName)
+        ag.main(outName)
     else:
-        print "%s into %s" % (get_filename(input), outname)
+        # print "%s into %s" % (get_filename(input), outName)
         df1 = csv_to_dataframe(input)
         df1 = filter_qc(df1)
         df1 = filter_dates(df1)
         df1 = set_headers(df1)
         df1 = replace_nan(df1)
         write_netcdf(df1, outName)
+        ag.main(outName)
 
 def get_testsite(input):
     '''

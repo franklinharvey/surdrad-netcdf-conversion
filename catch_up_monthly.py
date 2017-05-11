@@ -14,6 +14,8 @@ def main():
                 a = glob.glob(path + '/*.csv')
                 if a:
                     ncm.main(a)
+                else:
+                    print "Nothing for %s-%s-%s" % (site,year,month)
 
 if __name__ == '__main__':
     main()

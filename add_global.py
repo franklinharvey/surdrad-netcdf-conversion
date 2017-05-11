@@ -6,15 +6,15 @@ Output: NetCDF file with Surfrad metadata
 import sys
 from netCDF4 import Dataset
 
-def main(filesToProcess):
-    for input in filesToProcess:
-        foo = Dataset(input, "r+", format="NETCDF4")
-        foo = add_globals(foo)
-        foo = add_var_attrs(foo)
+def main(input):
+    print "Adding metadata to %s" % (input)
+    foo = Dataset(input, "r+", format="NETCDF4")
+    foo = add_globals(foo)
+    foo = add_var_attrs(foo)
 
 def add_globals(foo):
     foo.Conventions='CF-1.6'
-    foo.title = 'NOAA/ESRL/GMD/GRAD Radiation Archive - %s' % testsite
+    foo.title = 'NOAA/ESRL/GMD/GRAD Surfrad Radiation Archive'
     foo.institution = 'National Oceanic and Atmospheric Administration (NOAA) - David Skaggs Research Center - Boulder, CO'
     foo.comment = "Converted from .dat file in the radiation group's FTP server"
     return foo
