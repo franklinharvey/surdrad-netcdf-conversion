@@ -9,9 +9,9 @@ As of April 28, 2017, these files assume this directory is laid out in this mann
 
     Project
      |
-     +-- Python Files
+     +-- .py Files
      |
-     +-- Shell Files
+     +-- .sh Files
      |    
      +-- Data\
      |  |  
@@ -106,202 +106,14 @@ I made a shell script which will find all the .dat files in your directory and c
     ./_dat_to_csv.sh
 
 
+### Important note on .csv conversion
+
+The file `dat_to_csv.py` writes files to specific folders based on the date. This is very important for the NetCDF writer, as all the .csv files are alread grouped by month, year, and test site.
+
 ## Converting to .nc
 
-### Part One - Dataframes for Daily Files
+All of the actual csv->nc conversion logic lies in `nc_convert.py`. Essentially it checks whether the input is a single file (`isinstance(input, basestring)`) or a set of files. Single files are daily files, anything else is combined into a single file. As I'm writing this, all qc columns are dropped and all headers are renamed based off of names supplied by John Augustine. 
 
-Even after all the trouble of converting to .csv files, we still can't convert directly to NetCDF files. The data must again be converted, this time into Pandas dataframes. However, dataframes are stored in memory, not in disk, so these are not extra files to be storing.
+The scripts `csv_to_nc_daily`, `csv_to_nc_monthly`, `csv_to_nc_yearly`, and `csv_to_nc_testsite` all handle the logic pertaining to naming NetCDF files and passing data to `nc_convert.py`. So `csv_to_nc_monthly` takes an input of exactly a month's worth of data, determines a name, and passes it to `nc_convert.py`.
 
-This method is for one-to-one conversions; each input file will get its own output file. The method to create combined files will be in Part Two - Dataframes for Annual Files.
-
-What follows can be found in `csv_to_nc_daily.py`.
-
-
-```python
-import sys
-from os.path import basename
-import os
-import pandas as pd
-import xarray as xr
-```
-
-
-```python
-def get_testsite(input):
-    '''
-    Grabs the initials from the filename and returns the full name of the test site
-    '''
-    base = os.path.splitext(basename(input))[0]
-    testsite = base[0:3]
-    if testsite == "bon":
-        return "Bondville_IL"
-    elif testsite == "tbl":
-        return "Boulder_CO"
-    elif testsite == "dra":
-        return "Desert_Rock_NV"
-    elif testsite == "fpk":
-        return "Fort_Peck_MT"
-    elif testsite == "gwn":
-        return "Goodwin_Creek_MS"
-    elif testsite == "psu":
-        return "Penn_State_PA"
-    elif testsite == "sxf":
-        return "Sioux_Falls_SD"
-    else:
-        print "no matching testing site for input file"
-        return "no_test_site"
-```
-
-
-```python
-input = "bon16001.csv"
-filename = os.path.splitext(basename(input))[0] # same as before: "bon16001"
-
-with open(input, 'r') as input_file:
-    df1=pd.read_csv(input_file,
-        sep=",", # comma-delimited
-        parse_dates = {'Date': [0,1,4,5]},
-        date_parser = lambda x: pd.to_datetime(x, format="%Y %j %H %M"), # using Year, Julian Day, Hour, and Minute 
-        index_col = ['Date']) # sets the index to the new "Date" column
-    df1.loc[:,'TestSite'] = get_testsite(input) # adds new column with test site (e.g "Bondville_IL)
-```
-
-
-```python
-# If you decide you don't need all the qc columns, here's a handy function to get rid of them
-def filter_qc(df1):
-    '''
-    Drops all the qc columns
-    '''
-    df1.drop(list(df1.filter(like="qc")), axis=1, inplace=True)
-    df1.drop(df1.columns[[0,1,2]], axis=1, inplace=True)
-    return df1
-
-# Since we know that "-9999.9" indicates a "NaN" value, we can replace them like this
-def replace_nan(df1):
-    '''
-    The value "-9999.9" is specified to be a placeholder for non-existent values. This replaces those values with "NaN"
-    '''
-    df1.replace(to_replace="-9999.9",value="NaN", inplace=True)
-    return df1
-```
-
-
-```python
-# To actually write out to a NetCDF file, use xarray
-xds = xr.Dataset.from_dataframe(df1)
-xds.to_netcdf(filename + ".nc")
-```
-
-### Part Two - Dataframes for Annual Files
-
-If everything above makes sense, everything below should as well. The only difference is that instead of writing out files one-to-one, all the files are combined by year and testsite.
-
-
-```python
-import sys
-from os.path import basename
-import os
-import pandas as pd
-import xarray as xr
-```
-
-
-```python
-# These are some functions to help
-def get_out_name(input):
-    '''
-    Returns testsite_year
-    For example, Bondville_IL_16
-    '''
-    return "%s_%s" % (get_testsite(input),get_year(input))
-
-def get_year(input):
-    '''
-    Returns the year of the file
-    For example, bon16001.csv returns 16
-    '''
-    return get_filename(input)[3:5]
-
-def get_julian_day(input):
-    '''
-    Returns the julian day
-    For example, bon16001.csv returns 001
-    '''
-    return get_filename(input)[5:8]
-
-def get_filename(input):
-    '''
-    Returns the name of the file without the extension.
-    For example:
-
-    Input: "Test_01.csv"
-    Output: "Test_01"
-    '''
-    return os.path.splitext(basename(input))[0]
-```
-
-
-```python
-input1 = "bon16001.csv"
-input2 = "bon16002.csv"
-filesToProcess = [input1,input2] # make an array of all the files to combine
-outName = get_out_name(filesToProcess[0])
-```
-
-
-```python
-# These are necessary functions for conversion and are not very different from what is shown above
-
-def csv_to_dataframe(input):
-    '''
-    Loads a csv into a Pandas dataframe.
-    Uses the Year, Julian Day, Hour, and Minute to create an index column of "Date".
-    Adds the test site as a column
-    '''
-    with open(input, 'r') as input_file:
-        df1=pd.read_csv(input_file,
-            sep=",",
-            parse_dates = {'Date': [0,1,4,5]},
-            date_parser = lambda x: pd.to_datetime(x, format="%Y %j %H %M"),
-            index_col = ['Date'])
-        df1.loc[:,'TestSite'] = get_testsite(input)
-    return df1
-
-def write_netcdf(df1, name):
-    '''
-    Writes the dataframe into a NetCDF4 file
-    '''
-    xds = xr.Dataset.from_dataframe(df1)
-    xds.to_netcdf(name + ".nc")
-```
-
-
-```python
-for count,input in enumerate(filesToProcess):
-    filename = get_filename(input)
-    df1 = csv_to_dataframe(input)
-    if count == 0: # move the first dataframe into df2, df2 will be a sort of "master" dataframe which we append to
-        df2 = df1
-        del df1
-    else:
-        df2 = pd.concat([df2, df1]) # combines the current dataframe with the "master" dataframe
-        del df1
-write_netcdf(df2, outName)
-
-del df2
-```
-
-Specifically for annual files, an example would be
-
-    python csv_to_nc_combine.py bon16*.csv
-    
-which would take all the Bondville_IL files from 2016 and combine them into a NetCDF file. You would need to point it to the correct directory which contains you data files. In my case that would be
-
-    python csv_to_nc_combine.py Data/csv/bon16*.csv
-    
-There is nothing to stop you from trying
-
-    python csv_to_nc_combine.py Data/csv/bon*.csv
-
-which would combine all the Bondville_IL files. This will take a very long time to run.
+The scripts `catch_up_daily`, `catch_up_monthly`, `catch_up_yearly`, and `catch_up_testsite` determine what data fits into a timespan and pass them to the `csv_to_nc*` scripts. These are specifically written to "catch up" on historical data (as they recursively walk the data directory and pass all the data in it). These can be reimagined to convert new incoming data.
