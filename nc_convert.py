@@ -12,6 +12,8 @@ def normal_process(input, outName):
     if not isinstance(input, basestring):
         for count,day in enumerate(input):
             # print "%s into %s -- %i/%i" % (get_filename(day), outName, count+1, len(input))
+            if not (count+1) % 10:
+                print "%s into %s -- %i/%i" % (get_filename(day), outName, count+1, len(input))
             df1 = csv_to_dataframe(day)
             df1 = filter_qc(df1)
             df1 = filter_dates(df1)
